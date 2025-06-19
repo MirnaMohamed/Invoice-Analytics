@@ -1,15 +1,27 @@
-from typing import Union
-
 from fastapi import FastAPI
 
-from routers import user, invoices
+from core.config import settings
+from db.database import engine
+from models import invoice
+from routers.user import router as user_router
+from routers.invoices import router as invoice_router
 
-app = FastAPI(
-    swagger_ui_parameters={"useUnsafeMarkdown": True},
-)
+def include_router(base_app):
+    base_app.include_router(user_router)
+    base_app.include_router(invoice_router)
 
-app.include_router(user.router)
-app.include_router(invoices.router)
+def on_startup():
+    invoice.Base.metadata.create_all(bind=engine)
+
+def start_application():
+    app_builder = FastAPI(
+        title=settings.PROJECT_NAME,
+        version=settings.PROJECT_VERSION
+    )
+    include_router(app_builder)
+    return app_builder
+
+app = start_application()
 
 
 @app.get("/")

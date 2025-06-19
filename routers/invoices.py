@@ -1,35 +1,70 @@
-from typing import List
+from http import HTTPStatus
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 
+from db.database import get_db
+from dtos.invoice import CreateInvoiceDTO, GetInvoiceDTO
 from models.invoice import Invoice
 
-router = APIRouter()
-#endpoint_name = "invoices"
+router = APIRouter(
+    prefix="/invoices",
+    tags=["Invoices"]
+)
 
-invoices: List[Invoice] = [
+db_dependency = Annotated[Session, Depends(get_db)]
 
-]
 
-@router.get("/invoices", response_model=List[Invoice])
-async def read_invoices():
-    return invoices
+@router.get("/")
+def read_invoices(db: Session = Depends(get_db)):
+    return db.query(Invoice).all()
 
-@router.get("/invoices/{invoice_id}", response_model=Invoice)
-async def get_invoice_by_id(invoice_id: int):
-    return invoices[invoice_id]
-
-@router.post("/invoices", response_model=Invoice)
-async def create_invoice(invoice: Invoice):
-    invoices.append(invoice)
+# GET invoice by ID
+@router.get("/{invoice_id}")
+async def get_invoice_by_id(invoice_id: int, db: db_dependency):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if not invoice:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Invoice with id: {invoice_id} not found"
+        )
     return invoice
 
-@router.put("/invoices/{id}", response_model=Invoice)
-async def update_invoice(id: int, invoice: Invoice):
-    invoices[id] = invoice
-    return invoice
+# POST create new invoice
+@router.post("/", status_code=HTTPStatus.CREATED, response_model=GetInvoiceDTO)
+async def create_invoice(dto: CreateInvoiceDTO, db: db_dependency):
+    invoice = Invoice(**dto.model_dump())
+    db.add(invoice)
+    db.commit()
+    db.refresh(invoice)
+    return GetInvoiceDTO(**invoice.__dict__)
 
-@router.delete("/invoices/{invoice_id}")
-async def delete_invoice(invoice_id: int):
-    del invoices[invoice_id]
+# PUT update invoice
+@router.put("/{invoice_id}",
+            status_code=HTTPStatus.OK, response_model=Get)
+async def update_invoice(invoice_id: int, dto: CreateInvoiceDTO, db: db_dependency):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if not invoice:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Invoice with id: {invoice_id} not found"
+        )
+    for key, value in dto.model_dump().items():
+        setattr(invoice, key, value)
+    db.commit()
+    db.refresh(invoice)
+    return GetInvoiceDTO(**invoice.__dict__)
+
+# DELETE invoice
+@router.delete("/{invoice_id}", status_code=HTTPStatus.OK)
+async def delete_invoice(invoice_id: int, db: db_dependency):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if not invoice:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Invoice with id: {invoice_id} not found"
+        )
+    db.delete(invoice)
+    db.commit()
     return {"message": "Invoice deleted"}

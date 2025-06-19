@@ -1,12 +1,8 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
 import os
 from dotenv import load_dotenv
 
 from pathlib import Path
-env_path = Path('..') / '.env'
+env_path = Path('core/.env')
 load_dotenv(dotenv_path=env_path)
 
 class Settings:
@@ -20,4 +16,6 @@ class Settings:
     POSTGRES_DB : str = os.getenv("POSTGRES_DB")
     DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
+    API_KEY = os.getenv("API_KEY")
+    #DATABASE_URL ="postgresql+psycopg2://postgres:gXKWOahqG732SaSKMatI338Aw6HbmueGFxyK8iTNAnZEsOSrSnUtyEBc6AT7n0MF@144.91.119.145:7171/mirna-dev"
 settings = Settings()
