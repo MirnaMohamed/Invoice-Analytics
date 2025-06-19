@@ -42,7 +42,7 @@ async def create_invoice(dto: CreateInvoiceDTO, db: db_dependency):
 
 # PUT update invoice
 @router.put("/{invoice_id}",
-            status_code=HTTPStatus.OK, response_model=Get)
+            status_code=HTTPStatus.OK, response_model=GetInvoiceDTO)
 async def update_invoice(invoice_id: int, dto: CreateInvoiceDTO, db: db_dependency):
     invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
     if not invoice:
