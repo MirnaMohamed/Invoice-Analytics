@@ -38,8 +38,7 @@ async def get_invoice_by_id(invoice_id: int, db: db_dependency):
 async def create_invoice(dto: CreateInvoiceDTO, db: db_dependency):
     rate: float = 0
     if dto.creation_date < datetime.today():
-        rates = await old_exchange_rate(dto.original_currency, dto.creation_date)
-        rate = rates.get(dto.original_currency)
+        rate = await old_exchange_rate(dto.original_currency, dto.creation_date)
     elif dto.creation_date > datetime.now():
         raise HTTPException(status_code=400, detail="Creation date cannot be in the future.")
     else:
