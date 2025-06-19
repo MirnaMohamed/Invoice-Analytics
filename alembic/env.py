@@ -2,6 +2,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlmodel import SQLModel
 
 from alembic import context
 
@@ -23,6 +24,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from db.database import Base  # wherever you define Base = declarative_base()
+from models.invoice import Invoice  # ensure all models are imported
+
 target_metadata = Base.metadata
 print("🔎 Tables seen by Alembic:", target_metadata.tables.keys())
 # other values from the config, defined by the needs of env.py,

@@ -1,12 +1,13 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
-from dtos.currency import Currency
+from pydantic import BaseModel, Field, ConfigDict
+from enums.currency import Currency
 
 class CreateInvoiceDTO(BaseModel):
     amount: float = Field(gt=0, description="Invoice amount")
     original_currency: Optional[Currency] = Currency.USD
-    creation_date: Optional[datetime] = None
+    customer_name: Optional[str] = None
+    creation_date: Optional[datetime] = datetime.now()
 
 
 class GetInvoiceDTO(BaseModel):
@@ -16,3 +17,6 @@ class GetInvoiceDTO(BaseModel):
     creation_date: datetime
     converted_amount: float
     standard_currency: Currency
+    exchange_rate: float
+
+    model_config = ConfigDict(from_attributes=True)

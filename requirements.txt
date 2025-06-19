@@ -33,3 +33,4 @@ MarkupSafe~=3.0.2
 certifi~=2025.6.15
 sqlmodel~=0.0.24
 httpx
+cachetools

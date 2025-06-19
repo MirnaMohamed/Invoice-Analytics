@@ -3,12 +3,14 @@ from fastapi import FastAPI
 from core.config import settings
 from db.database import engine
 from models import invoice
-from routers.user import router as user_router
+from routers.analytics import router as user_router
 from routers.invoices import router as invoice_router
+from services.exchange_rate import router as exchange_router
 
 def include_router(base_app):
     base_app.include_router(user_router)
     base_app.include_router(invoice_router)
+    base_app.include_router(exchange_router)
 
 def on_startup():
     invoice.Base.metadata.create_all(bind=engine)
